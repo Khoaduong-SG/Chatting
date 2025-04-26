@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Realtime Chat</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: sans-serif; }
+        #chatbox {
+            border: 1px solid #ccc;
+            height: 300px;
+            overflow-y: scroll; /* Cho phép cuộn nếu tin nhắn đầy */
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #f9f9f9;
+        }
+        .message {
+            margin-bottom: 8px;
+            padding: 5px;
+            border-radius: 5px;
+            max-width: 80%; /* Giới hạn chiều rộng tin nhắn */
+            word-wrap: break-word; /* Ngắt dòng tin nhắn dài */
+        }
+        .message strong {
+            margin-right: 5px;
+            color: #333;
+        }
+        .message-input-area {
+            display: flex;
+        }
+        #messageInput {
+            flex-grow: 1; /* Mở rộng ô nhập */
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-right: 5px;
+        }
+        #sendMessageBtn {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #sendMessageBtn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simple Realtime Chat</h1>
+
+    <div id="chatbox">
+        </div>
+
+    <div class="message-input-area">
+        <input type="text" id="messageInput" placeholder="Nhập tin nhắn...">
+        <button id="sendMessageBtn">Gửi</button>
+    </div>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
