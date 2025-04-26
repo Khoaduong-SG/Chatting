@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Fancy ChatHub</title>
+  <link rel="stylesheet" href="style.css" />
+  <script type="module" src="firebase-config.js"></script>
+</head>
+<body class="chat-body">
+  <div class="chat-container">
+    <h2>Fancy ChatHub 💬</h2>
+    <div id="messages" class="messages"></div>
+    <div class="message-input">
+      <input id="messageInput" type="text" placeholder="Type your message... 😊" />
+      <button id="sendBtn">Send</button>
+    </div>
+    <div class="loading" id="loading">Sending...</div>
+  </div>
+  <script type="module" src="chat.js"></script>
+</body>
+</html>
