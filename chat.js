@@ -1,45 +1,75 @@
-import { db, auth } from './firebase-config.js';
-import { ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { app } from "./firebase-config.js"; // file firebase-config.js của bạn đã khai báo initializeApp
 
-const messageInput = document.getElementById('messageInput');
+const db = getDatabase(app);
+const auth = getAuth(app);
+
+// Xác định user
+let currentUser = null;
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    currentUser = user;
+  } else {
+    window.location.href = "index.html"; // Nếu chưa đăng nhập, về lại trang login
+  }
+});
+
+// Gửi tin nhắn
 const sendBtn = document.getElementById('sendBtn');
+const messageInput = document.getElementById('messageInput');
 const messagesDiv = document.getElementById('messages');
 const loading = document.getElementById('loading');
 
-onAuthStateChanged(auth, user => {
-  if (!user) {
-    window.location.href = "index.html";
-    return;
-  }
+sendBtn.addEventListener('click', () => {
+  const text = messageInput.value.trim();
+  if (text === "" || !currentUser) return;
 
-  const messagesRef = ref(db, 'messages');
+  loading.style.display = "block";
 
-  sendBtn.addEventListener('click', () => {
-    const text = messageInput.value.trim();
-    if (!text) return;
-
-    loading.style.display = 'block';
-    push(messagesRef, {
-      text,
-      sender: user.email,
-      timestamp: Date.now()
-    }).then(() => {
-      messageInput.value = '';
-      loading.style.display = 'none';
-    });
-  });
-
-  onChildAdded(messagesRef, snapshot => {
-    const msg = snapshot.val();
-    const msgDiv = document.createElement('div');
-    msgDiv.className = 'message ' + (msg.sender === user.email ? 'right' : 'left');
-    msgDiv.innerHTML = \`
-      <div class="sender">\${msg.sender}</div>
-      <div class="text">\${msg.text}</div>
-      <div class="time">\${new Date(msg.timestamp).toLocaleTimeString()}</div>
-    \`;
-    messagesDiv.appendChild(msgDiv);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  push(ref(db, "messages"), {
+    uid: currentUser.uid,
+    name: currentUser.displayName || "Anonymous",
+    text: text,
+    timestamp: Date.now()
+  }).then(() => {
+    messageInput.value = "";
+    loading.style.display = "none";
+  }).catch((error) => {
+    console.error(error);
+    loading.style.display = "none";
   });
 });
+
+// Lắng nghe tin nhắn mới
+onChildAdded(ref(db, "messages"), (snapshot) => {
+  const message = snapshot.val();
+  displayMessage(message);
+});
+
+function displayMessage(message) {
+  const msgDiv = document.createElement('div');
+  msgDiv.classList.add('message');
+
+  const isCurrentUser = message.uid === (currentUser && currentUser.uid);
+  msgDiv.classList.add(isCurrentUser ? 'right' : 'left');
+
+  const sender = document.createElement('div');
+  sender.className = "sender";
+  sender.textContent = message.name;
+
+  const content = document.createElement('div');
+  content.textContent = message.text;
+
+  const time = document.createElement('div');
+  time.className = "time";
+  const date = new Date(message.timestamp);
+  time.textContent = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  msgDiv.appendChild(sender);
+  msgDiv.appendChild(content);
+  msgDiv.appendChild(time);
+
+  messagesDiv.appendChild(msgDiv);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
