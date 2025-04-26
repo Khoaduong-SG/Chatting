@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fancy ChatHub - Chat</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="chat-container">
+    <h1>Chào mừng bạn đến với Fancy ChatHub 🎉</h1>
+    <button onclick="logout()">Đăng xuất</button>
+    <div id="messages"></div>
+    <input type="text" id="messageInput" placeholder="Nhập tin nhắn...">
+    <button onclick="sendMessage()">Gửi</button>
+  </div>
+
+  <script type="module" src="./firebase-config.js"></script>
+  <script type="module" src="./chat.js"></script>
+</body>
+</html>
