@@ -1,111 +1,169 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Fancy ChatHub</title>
-  <link rel="stylesheet" href="style.css" />
-  <script type="module" src="firebase-config.js"></script>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 0; padding: 0;
-      background: #f0f2f5;
-    }
-    .chat-body {
-      display: flex; justify-content: center; align-items: center;
+      background-color: #f1f2f6;
+      font-family: 'Arial', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       height: 100vh;
+      margin: 0;
     }
     .chat-container {
-      width: 90%; max-width: 500px;
-      background: white; border-radius: 10px;
-      padding: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      display: flex; flex-direction: column; height: 90vh;
+      background: #fff;
+      border-radius: 12px;
+      width: 400px;
+      max-width: 90%;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
-    h2 {
+    .chat-header {
+      padding: 15px;
+      font-size: 20px;
+      font-weight: bold;
       text-align: center;
-      margin-bottom: 10px;
+      background: #4e73df;
+      color: #fff;
     }
-    #messages {
+    .chat-messages {
       flex: 1;
+      padding: 15px;
       overflow-y: auto;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      margin-bottom: 10px;
-      background: #fefefe;
+      background: #f9fafb;
     }
     .message {
-      max-width: 75%;
-      margin: 5px 0;
-      padding: 10px;
-      border-radius: 10px;
-      word-wrap: break-word;
-      animation: fadeIn 0.3s ease-in;
+      margin-bottom: 15px;
     }
-    .left {
-      background-color: #e5e5ea;
-      align-self: flex-start;
-    }
-    .right {
-      background-color: #dcf8c6;
-      align-self: flex-end;
-    }
-    .sender {
-      font-size: 12px;
+    .message .sender {
       font-weight: bold;
-      margin-bottom: 4px;
+      margin-bottom: 5px;
     }
-    .time {
-      font-size: 10px;
-      text-align: right;
-      margin-top: 4px;
-      color: #777;
+    .message .time {
+      font-size: 11px;
+      color: #999;
+      margin-left: 5px;
     }
-    .message-input {
+    .message .text {
+      background: #e1e5ea;
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 15px;
+      max-width: 70%;
+      word-wrap: break-word;
+    }
+    .chat-input {
       display: flex;
-      gap: 10px;
+      padding: 10px;
+      background: #f1f2f6;
     }
-    .message-input input {
+    .chat-input input {
       flex: 1;
       padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 20px;
+      outline: none;
     }
-    .message-input button {
-      padding: 10px;
-    }
-    .loading {
-      text-align: center;
-      font-size: 12px;
-      color: #888;
-      display: none;
-      margin-top: 5px;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+    .chat-input button {
+      background: #4e73df;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      margin-left: 10px;
+      border-radius: 20px;
+      cursor: pointer;
     }
   </style>
 </head>
-<body class="chat-body">
-  <div class="chat-container">
-    <h2>Fancy ChatHub 💬</h2>
-    <div id="messages"></div>
-    <div class="message-input">
-      <input id="messageInput" type="text" placeholder="Type a message..." />
-      <button id="sendBtn">Send</button>
-    </div>
-    <div class="loading" id="loading">Sending...</div>
-  </div>
+<body>
 
-  <script type="module" src="chat.js"></script>
-  <script type="module">
-    // Allow Enter key to send
-    const input = document.getElementById("messageInput");
-    const btn = document.getElementById("sendBtn");
-    input.addEventListener("keydown", function (e) {
-      if (e.key === "Enter") {
-        btn.click();
-      }
-    });
-  </script>
+<div class="chat-container">
+  <div class="chat-header">Fancy ChatHub 💬</div>
+  <div class="chat-messages" id="messages"></div>
+  <div class="chat-input">
+    <input type="text" id="messageInput" placeholder="Nhập tin nhắn...">
+    <button id="sendBtn">Gửi</button>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+  import { getDatabase, ref, push, onChildAdded, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCe6ZDW_1dUn9WCnrls_9Y5ookztnf_0Zs",
+    authDomain: "chathub-25042025.firebaseapp.com",
+    databaseURL: "https://chathub-25042025-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "chathub-25042025",
+    storageBucket: "chathub-25042025.appspot.com",
+    messagingSenderId: "616104747114",
+    appId: "1:616104747114:web:6f981f3cdc93199126aa13",
+    measurementId: "G-GFPB602T33"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const auth = getAuth(app);
+
+  const messagesRef = ref(db, 'messages');
+  const messageInput = document.getElementById('messageInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const messages = document.getElementById('messages');
+
+  let currentUserName = "Người lạ"; // Default nếu không có tên
+
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      currentUserName = user.displayName || "Người dùng ẩn danh";
+    } else {
+      window.location.href = "index.html"; // nếu chưa login, chuyển về login
+    }
+  });
+
+  sendBtn.addEventListener('click', sendMessage);
+  messageInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  function sendMessage() {
+    const text = messageInput.value.trim();
+    if (text) {
+      push(messagesRef, {
+        sender: currentUserName,
+        text: text,
+        timestamp: Date.now()
+      });
+      messageInput.value = '';
+    }
+  }
+
+  onChildAdded(messagesRef, data => {
+    const msg = data.val();
+    displayMessage(msg.sender, msg.text, msg.timestamp);
+  });
+
+  function displayMessage(sender, text, timestamp) {
+    const timeString = new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const messageElement = document.createElement('div');
+    messageElement.classList.add('message');
+    messageElement.innerHTML = `
+      <div class="sender">${sender} <span class="time">${timeString}</span></div>
+      <div class="text">${text}</div>
+    `;
+    messages.appendChild(messageElement);
+    messages.scrollTop = messages.scrollHeight;
+  }
+</script>
+
 </body>
 </html>
