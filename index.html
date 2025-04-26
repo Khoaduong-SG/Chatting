@@ -1,39 +1,114 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8" />
-  <title>Fancy ChatHub - Login</title>
-  <link rel="stylesheet" href="style.css" />
-  <script type="module" src="firebase-config.js"></script>
+  <meta charset="UTF-8">
+  <title>Login Duong Testing</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #f1f2f6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 300px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #4e73df;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .toggle {
+      text-align: center;
+      margin-top: 15px;
+      color: #4e73df;
+      cursor: pointer;
+    }
+  </style>
 </head>
-<body class="auth-body">
-  <div class="auth-container">
-    <h2>Fancy ChatHub</h2>
+<body>
+  <div class="container">
+    <h2 id="formTitle">Login</h2>
+    <input type="text" id="nameField" placeholder="Your name" style="display: none;" />
     <input type="email" id="email" placeholder="Email" />
     <input type="password" id="password" placeholder="Password" />
-    <button id="loginBtn">Login</button>
-    <button id="signupBtn">Sign Up</button>
+    <button id="authButton">Login</button>
+    <div class="toggle" onclick="toggleMode()">Don't have an account? Register</div>
   </div>
+
   <script type="module">
-    import { auth } from './firebase-config.js';
-    import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
-    const loginBtn = document.getElementById('loginBtn');
-    const signupBtn = document.getElementById('signupBtn');
+    const firebaseConfig = {
+      apiKey: "AIzaSyCe6ZDW_1dUn9WCnrls_9Y5ookztnf_0Zs",
+      authDomain: "chathub-25042025.firebaseapp.com",
+      databaseURL: "https://chathub-25042025-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "chathub-25042025",
+      storageBucket: "chathub-25042025.firebasestorage.app",
+      messagingSenderId: "616104747114",
+      appId: "1:616104747114:web:6f981f3cdc93199126aa13",
+      measurementId: "G-GFPB602T33"
+    };
 
-    loginBtn.addEventListener('click', () => {
-      signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value)
-        .then(() => window.location.href = "chat.html")
-        .catch(err => alert("Login error: " + err.message));
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    let isRegistering = false;
+
+    document.getElementById('authButton').addEventListener('click', () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      if (isRegistering) {
+        const name = document.getElementById("nameField").value;
+        createUserWithEmailAndPassword(auth, email, password)
+          .then((userCredential) => {
+            updateProfile(userCredential.user, {
+              displayName: name
+            }).then(() => {
+              window.location.href = "chat.html";
+            });
+          })
+          .catch(alert);
+      } else {
+        signInWithEmailAndPassword(auth, email, password)
+          .then(() => window.location.href = "chat.html")
+          .catch(alert);
+      }
     });
 
-    signupBtn.addEventListener('click', () => {
-      createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value)
-        .then(() => window.location.href = "chat.html")
-        .catch(err => alert("Signup error: " + err.message));
-    });
+    function toggleMode() {
+      isRegistering = !isRegistering;
+      document.getElementById("formTitle").innerText = isRegistering ? "Register" : "Login";
+      document.getElementById("nameField").style.display = isRegistering ? "block" : "none";
+      document.getElementById("authButton").innerText = isRegistering ? "Register" : "Login";
+      document.querySelector(".toggle").innerText = isRegistering
+        ? "Already have an account? Login"
+        : "Don't have an account? Register";
+    }
   </script>
 </body>
 </html>
