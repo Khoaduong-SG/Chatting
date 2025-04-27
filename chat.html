@@ -1,198 +1,106 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Duong Test</title>
+  <title>ChatHub - Chat</title>
   <style>
-    body {
-      background-color: #f1f2f6;
-      font-family: Arial, sans-serif;
-      margin: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    .chat-container {
-      background: #fff;
-      border-radius: 12px;
-      width: 400px;
-      max-width: 90%;
-      height: 600px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    .chat-header {
-      padding: 15px;
-      font-size: 20px;
-      font-weight: bold;
-      text-align: center;
-      background: #4e73df;
-      color: #fff;
-    }
-    .chat-messages {
-      flex: 1;
-      padding: 15px;
-      overflow-y: auto;
-      background: #f9fafb;
-    }
-    .chat-input {
-      display: flex;
-      padding: 10px;
-      background: #f1f2f6;
-    }
-    .chat-input input {
-      flex: 1;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 20px;
-      outline: none;
-    }
-    .chat-input button {
-      background: #4e73df;
-      color: #fff;
-      border: none;
-      padding: 10px 20px;
-      margin-left: 10px;
-      border-radius: 20px;
-      cursor: pointer;
-    }
-
-    .message {
-      margin-bottom: 15px;
-      display: flex;
-      flex-direction: column;
-      max-width: 70%;
-      animation: fadeInUp 0.4s ease;
-    }
-
-    .message.self {
-      align-self: flex-end;
-      text-align: right;
-    }
-
-    .message.other {
-      align-self: flex-start;
-      text-align: left;
-    }
-
-    .message .sender {
-      font-weight: bold;
-      margin-bottom: 5px;
-    }
-
-    .message .time {
-      font-size: 11px;
-      color: #999;
-      margin-left: 5px;
-    }
-
-    .message .text {
-      padding: 10px 14px;
-      border-radius: 15px;
-      word-wrap: break-word;
-      background: #e1e5ea;
-      display: inline-block;
-    }
-
-    .message.self .text {
-      background: #4e73df;
-      color: white;
-    }
-
-    @keyframes fadeInUp {
-      0% {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      100% {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
+    body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; display: flex; flex-direction: column; height: 100vh; }
+    .chat-container { flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; }
+    .message { margin: 10px 0; display: flex; align-items: flex-end; animation: slide 0.3s ease; }
+    .message .avatar { width: 40px; height: 40px; border-radius: 50%; margin-right: 8px; }
+    .message .content { background: #dcf8c6; padding: 8px 12px; border-radius: 10px; max-width: 60%; position: relative; }
+    .message .content::after { content: attr(data-time); font-size: 10px; color: gray; position: absolute; bottom: -15px; right: 5px; }
+    .input-area { display: flex; padding: 10px; background: white; }
+    .input-area input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 20px; outline: none; }
+    .input-area button { margin-left: 10px; padding: 0 15px; border: none; background: #007bff; color: white; border-radius: 50%; font-size: 20px; cursor: pointer; }
+    @keyframes slide { from { transform: translateX(-30px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
   </style>
-</head>
-<body>
-  <div class="chat-container">
-    <div class="chat-header">ChatHub</div>
-    <div class="chat-messages" id="messages"></div>
-    <div class="chat-input">
-      <input type="text" id="messageInput" placeholder="Type a message..." />
-      <button onclick="sendMessage()">Send</button>
-    </div>
-  </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCe6ZDW_1dUn9WCnrls_9Y5ookztnf_0Zs",
       authDomain: "chathub-25042025.firebaseapp.com",
       databaseURL: "https://chathub-25042025-default-rtdb.asia-southeast1.firebasedatabase.app",
       projectId: "chathub-25042025",
-      storageBucket: "chathub-25042025.firebasestorage.app",
+      storageBucket: "chathub-25042025.appspot.com",
       messagingSenderId: "616104747114",
       appId: "1:616104747114:web:6f981f3cdc93199126aa13",
       measurementId: "G-GFPB602T33"
     };
 
     const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
     const auth = getAuth(app);
+    const db = getDatabase(app);
 
-    let currentUserName = "Unknown";
+    const chatContainer = document.getElementById('chat');
+    const input = document.getElementById('messageInput');
 
-    const messages = document.getElementById("messages");
-    const messageInput = document.getElementById("messageInput");
+    let currentUser = null;
 
-    onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        window.location.href = "index.html";
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        currentUser = user;
+        loadMessages();
       } else {
-        currentUserName = user.displayName || "Anonymous";
-        const messagesRef = ref(db, "messages");
-        onChildAdded(messagesRef, (data) => {
-          const msg = data.val();
-          displayMessage(msg.sender, msg.text, msg.timestamp);
-        });
+        window.location.href = 'index.html';
       }
     });
 
-    function sendMessage() {
-      const text = messageInput.value.trim();
-      if (text === "") return;
-
-      const messagesRef = ref(db, "messages");
-      push(messagesRef, {
-        sender: currentUserName,
-        text: text,
-        timestamp: Date.now()
+    function loadMessages() {
+      const messagesRef = ref(db, 'messages');
+      onChildAdded(messagesRef, snapshot => {
+        const msg = snapshot.val();
+        addMessage(msg);
       });
-
-      messageInput.value = "";
     }
 
-    function displayMessage(sender, text, timestamp) {
-      const timeString = new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      const messageElement = document.createElement('div');
-      const isSelf = sender === currentUserName;
-      messageElement.classList.add('message', isSelf ? 'self' : 'other');
-
-      messageElement.innerHTML = `
-        <div class="sender">${sender} <span class="time">${timeString}</span></div>
-        <div class="text">${text}</div>
+    function addMessage(msg) {
+      const div = document.createElement('div');
+      div.className = 'message';
+      div.innerHTML = `
+        <img src="${msg.avatar}" class="avatar" />
+        <div class="content" data-time="${msg.time}">
+          <strong>${msg.name}:</strong> ${msg.text}
+        </div>
       `;
-      messages.appendChild(messageElement);
-      messages.scrollTop = messages.scrollHeight;
+      chatContainer.appendChild(div);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
-    messageInput.addEventListener("keypress", function (e) {
-      if (e.key === "Enter") sendMessage();
+    window.sendMessage = function () {
+      const text = input.value.trim();
+      if (text !== '') {
+        const messagesRef = ref(db, 'messages');
+        push(messagesRef, {
+          name: currentUser.displayName,
+          avatar: currentUser.photoURL || 'https://via.placeholder.com/40',
+          text: text,
+          time: new Date().toLocaleTimeString()
+        });
+        input.value = '';
+      }
+    };
+
+    window.logout = function () {
+      signOut(auth);
+    };
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
     });
   </script>
+</head>
+<body>
+  <div id="chat" class="chat-container"></div>
+  <div class="input-area">
+    <input id="messageInput" type="text" placeholder="Nhập tin nhắn..." />
+    <button onclick="sendMessage()">➤</button>
+  </div>
 </body>
 </html>
