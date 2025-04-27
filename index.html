@@ -1,73 +1,19 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Login Duong Testing</title>
-  <style>
-    body {
-      font-family: Arial;
-      background: #f1f2f6;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    .container {
-      background: white;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      width: 300px;
-    }
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    input {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      margin-bottom: 15px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-    }
-    button {
-      width: 100%;
-      padding: 10px;
-      background-color: #4e73df;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    .toggle {
-      text-align: center;
-      margin-top: 15px;
-      color: #4e73df;
-      cursor: pointer;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h2 id="formTitle">Login</h2>
-    <input type="text" id="nameField" placeholder="Your name" style="display: none;" />
-    <input type="email" id="email" placeholder="Email" />
-    <input type="password" id="password" placeholder="Password" />
-    <button id="authButton">Login</button>
-    <div class="toggle" onclick="toggleMode()">Don't have an account? Register</div>
-  </div>
-
+  <title>ChatHub - Đăng nhập / Đăng ký</title>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCe6ZDW_1dUn9WCnrls_9Y5ookztnf_0Zs",
       authDomain: "chathub-25042025.firebaseapp.com",
       databaseURL: "https://chathub-25042025-default-rtdb.asia-southeast1.firebasedatabase.app",
       projectId: "chathub-25042025",
-      storageBucket: "chathub-25042025.firebasestorage.app",
+      storageBucket: "chathub-25042025.appspot.com",
       messagingSenderId: "616104747114",
       appId: "1:616104747114:web:6f981f3cdc93199126aa13",
       measurementId: "G-GFPB602T33"
@@ -75,40 +21,49 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const storage = getStorage(app);
 
-    let isRegistering = false;
+    window.signup = async function () {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const file = document.getElementById('avatar').files[0];
 
-    document.getElementById('authButton').addEventListener('click', () => {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-
-      if (isRegistering) {
-        const name = document.getElementById("nameField").value;
-        createUserWithEmailAndPassword(auth, email, password)
-          .then((userCredential) => {
-            updateProfile(userCredential.user, {
-              displayName: name
-            }).then(() => {
-              window.location.href = "chat.html";
-            });
-          })
-          .catch(alert);
-      } else {
-        signInWithEmailAndPassword(auth, email, password)
-          .then(() => window.location.href = "chat.html")
-          .catch(alert);
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        if (file) {
+          const storageRef = ref(storage, 'avatars/' + userCredential.user.uid);
+          await uploadBytes(storageRef, file);
+          const downloadURL = await getDownloadURL(storageRef);
+          await updateProfile(userCredential.user, {
+            displayName: email.split('@')[0],
+            photoURL: downloadURL
+          });
+        }
+        alert('Đăng ký thành công!');
+        window.location.href = 'chat.html';
+      } catch (error) {
+        alert(error.message);
       }
-    });
+    };
 
-    function toggleMode() {
-      isRegistering = !isRegistering;
-      document.getElementById("formTitle").innerText = isRegistering ? "Register" : "Login";
-      document.getElementById("nameField").style.display = isRegistering ? "block" : "none";
-      document.getElementById("authButton").innerText = isRegistering ? "Register" : "Login";
-      document.querySelector(".toggle").innerText = isRegistering
-        ? "Already have an account? Login"
-        : "Don't have an account? Register";
-    }
+    window.login = async function () {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        window.location.href = 'chat.html';
+      } catch (error) {
+        alert(error.message);
+      }
+    };
   </script>
+</head>
+<body style="font-family: Arial, sans-serif; text-align: center; margin-top: 50px;">
+  <h1>ChatHub 🚀</h1>
+  <input id="email" type="email" placeholder="Email" /><br><br>
+  <input id="password" type="password" placeholder="Password" /><br><br>
+  <input id="avatar" type="file" accept="image/*" /><br><br>
+  <button onclick="signup()">Đăng ký</button>
+  <button onclick="login()">Đăng nhập</button>
 </body>
 </html>
