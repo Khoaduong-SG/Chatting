@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login | ChatHub</title>
+  <style>
+    body {
+      background: #e0e0e0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+    }
+    .login-box {
+      background: #e0e0e0;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 10px 10px 30px #bebebe,
+                  -10px -10px 30px #ffffff;
+      display: flex;
+      flex-direction: column;
+      width: 300px;
+    }
+    .login-box h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    .login-box input {
+      margin-bottom: 20px;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      box-shadow: inset 5px 5px 10px #bebebe,
+                  inset -5px -5px 10px #ffffff;
+      outline: none;
+    }
+    .login-box button {
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      background-color: #6C63FF;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 5px 5px 10px #bebebe,
+                  -5px -5px 10px #ffffff;
+      transition: background 0.3s;
+    }
+    .login-box button:hover {
+      background-color: #5752d3;
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-box">
+  <h2>Welcome to ChatHub</h2>
+  <input type="text" id="username" placeholder="Enter your username">
+  <button onclick="login()">Login</button>
+</div>
+
+<script>
+  function login() {
+    const username = document.getElementById('username').value.trim();
+    if (username) {
+      localStorage.setItem('username', username);
+      window.location.href = 'chat.html';
+    } else {
+      alert('Please enter a username!');
+    }
+  }
+
+  // Auto login nếu đã lưu username
+  window.onload = () => {
+    if (localStorage.getItem('username')) {
+      window.location.href = 'chat.html';
+    }
+  };
+</script>
+
+</body>
+</html>
