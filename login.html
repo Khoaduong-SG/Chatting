@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - ChatHub</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="firebase.js"></script>
+</head>
+<body>
+  <div class="login-container">
+    <h2>🚀 ChatHub Login</h2>
+    <input id="email" type="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
+    <input id="avatar" type="file" accept="image/*">
+    <button onclick="signup()">Đăng ký</button>
+    <button onclick="login()">Đăng nhập</button>
+  </div>
+  <script type="module">
+    import { signup, login } from './firebase.js';
+    window.signup = signup;
+    window.login = login;
+  </script>
+</body>
+</html>

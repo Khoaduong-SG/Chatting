@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChatHub</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="firebase.js"></script>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-header">
+      <h2>Fancy ChatHub 💬</h2>
+      <button id="logoutBtn">Logout</button>
+    </div>
+    <div id="messages"></div>
+    <div id="typing" style="font-style: italic; margin: 10px;"></div>
+    <div class="chat-input">
+      <input id="messageInput" placeholder="Nhập tin nhắn..." />
+      <button id="sendBtn">➤</button>
+    </div>
+  </div>
+  <script type="module">
+    import { initChat, logout } from './firebase.js';
+    initChat();
+    document.getElementById('logoutBtn').onclick = logout;
+  </script>
+</body>
+</html>
